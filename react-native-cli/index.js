@@ -188,8 +188,12 @@ function createProject(name, verbose) {
 }
 
 function run(root, projectName) {
-  exec('npm install --save react-native', function(e, stdout, stderr) {
+  exec('npm install --save D:\\Code\\react-native-myversion\\', function(e, stdout, stderr) {
+//	  exec('npm install --save react-native', function(e, stdout, stderr) {
     if (e) {
+      console.log('!!!!!!!!!!!!');
+      console.log('Please change path to react-native src folder in file "$user home$\\AppData\\Roaming\\npm\\node_modules\\react-native-cli" line 191');
+      console.log('!!!!!!!!!!!!');
       console.log(stdout);
       console.error(stderr);
       console.error('`npm install --save react-native` failed');
@@ -204,9 +208,13 @@ function run(root, projectName) {
 }
 
 function runVerbose(root, projectName) {
-  var proc = spawn('npm', ['install', '--verbose', '--save', 'react-native'], {stdio: 'inherit'});
+  var proc = spawn('npm', ['install', '--verbose', '--save', 'D:\\Code\\react-native-myversion\\'], {stdio: 'inherit'});
+//	  var proc = spawn('npm', ['install', '--verbose', '--save', 'react-native'], {stdio: 'inherit'});
   proc.on('close', function (code) {
     if (code !== 0) {
+      console.log('!!!!!!!!!!!!');
+      console.log('Please change path to react-native src folder in file "$user home$\\AppData\\Roaming\\npm\\node_modules\\react-native-cli" line 211');
+      console.log('!!!!!!!!!!!!');
       console.error('`npm install --save react-native` failed');
       return;
     }
