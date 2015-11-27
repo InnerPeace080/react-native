@@ -42,6 +42,8 @@ var spawn = require('child_process').spawn;
 var chalk = require('chalk');
 var prompt = require('prompt');
 var semver = require('semver');
+var os = require('os');
+
 
 var CLI_MODULE_PATH = function() {
   return path.resolve(
@@ -184,7 +186,12 @@ function createProject(name, verbose) {
 }
 
 function run(root, projectName, verbose) {
-  var proc = spawn('npm', ['install', (verbose ? '--verbose' : ''), '--save',  'react-native'], {stdio: 'inherit'});
+  if (os.platform() === 'win32') {
+    var proc = spawn('cmd', ['/c','npm', 'install', (verbose ? '--verbose' : ''), '--save',  'react-native'], {stdio: 'inherit'});
+  }
+  else{    
+    var proc = spawn('npm', ['install', (verbose ? '--verbose' : ''), '--save',  'react-native'], {stdio: 'inherit'});
+  }
   proc.on('close', function (code) {
     if (code !== 0) {
       console.error('`npm install --save react-native` failed');

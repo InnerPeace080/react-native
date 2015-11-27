@@ -35,11 +35,17 @@ const SocketInterface = {
         }
       });
 
-      const sockPath = path.join(
+//	      const sockPath = path.join(
+    let sockPath = path.join(
         tmpdir,
         'react-packager-' + hash.digest('hex')
       );
-
+    if (process.platform==='win32'){
+      sockPath = sockPath.replace(/^\//, '')
+      sockPath = sockPath.replace(/\//g, '-')
+      sockPath = '\\\\.\\pipe\\' + sockPath
+    }
+    
       if (fs.existsSync(sockPath)) {
         var sock = net.connect(sockPath);
         sock.on('connect', () => {
