@@ -42,8 +42,15 @@ var spawn = require('child_process').spawn;
 var chalk = require('chalk');
 var prompt = require('prompt');
 var semver = require('semver');
-var os = require('os');
+var optimist = require('optimist');
 
+var usage = 'Initilize a react-native project.\n' +
+            'Usage: react-native init <project-name> [--verbose] [-l <react-native-dir>]';
+
+var argv = optimist
+                  .usage(usage)
+                  .alias('l', 'local-react-native').describe('l', 'Path to local react-native project.')
+                  .argv;
 
 var CLI_MODULE_PATH = function() {
   return path.resolve(
@@ -74,35 +81,16 @@ if (fs.existsSync(cliPath)) {
 if (cli) {
   cli.run();
 } else {
-  var args = process.argv.slice(2);
-  if (args.length === 0) {
-    console.error(
-      'You did not pass any commands, did you mean to run `react-native init`?'
-    );
+  if (argv._.length != 2 || argv._[0] != 'init') {
+    argv.showHelp();
     process.exit(1);
   }
 
-  switch (args[0]) {
-  case 'init':
-    if (args[1]) {
-      var verbose = process.argv.indexOf('--verbose') >= 0;
-      init(args[1], verbose);
-    } else {
-      console.error(
-        'Usage: react-native init <ProjectName> [--verbose]'
-      );
-      process.exit(1);
-    }
-    break;
-  default:
-    console.error(
-      'Command `%s` unrecognized. ' +
-      'Did you mean to run this inside a react-native project?',
-      args[0]
-    );
-    process.exit(1);
-    break;
-  }
+  var project_name = argv._[1];
+  var local_react_native_dir = path.resolve(argv.l);
+  var verbose = argv.verbose;
+
+  init(project_name, local_react_native_dir, verbose);
 }
 
 function validatePackageName(name) {
@@ -125,17 +113,17 @@ function validatePackageName(name) {
   }
 }
 
-function init(name, verbose) {
+function init(name, local_react_native_dir, verbose) {
   validatePackageName(name);
 
   if (fs.existsSync(name)) {
-    createAfterConfirmation(name, verbose);
+    createAfterConfirmation(name, local_react_native_dir, verbose);
   } else {
-    createProject(name, verbose);
+    createProject(name, local_react_native_dir, verbose);
   }
 }
 
-function createAfterConfirmation(name, verbose) {
+function createAfterConfirmation(name, local_react_native_dir, verbose) {
   prompt.start();
 
   var property = {
@@ -148,7 +136,7 @@ function createAfterConfirmation(name, verbose) {
 
   prompt.get(property, function (err, result) {
     if (result.yesno[0] === 'y') {
-      createProject(name, verbose);
+      createProject(name, local_react_native_dir, verbose);
     } else {
       console.log('Project initialization canceled');
       process.exit();
@@ -156,7 +144,7 @@ function createAfterConfirmation(name, verbose) {
   });
 }
 
-function createProject(name, verbose) {
+function createProject(name, local_react_native_dir, verbose) {
   var root = path.resolve(name);
   var projectName = path.basename(root);
 
@@ -180,17 +168,21 @@ function createProject(name, verbose) {
   fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify(packageJson));
   process.chdir(root);
 
-  console.log('Installing react-native package from npm...');
+  if (local_react_native_dir) {
+    console.log('Installing react-native package from "' + local_react_native_dir + '" ...');
+  } else {
+    console.log('Installing react-native package from npm...');
+  }
 
-  run(root, projectName, verbose);
+  run(root, projectName, local_react_native_dir, verbose);
 }
 
-function run(root, projectName, verbose) {
-  if (os.platform() === 'win32') {
-    var proc = spawn('cmd', ['/c','npm', 'install', (verbose ? '--verbose' : ''), '--save',  'react-native'], {stdio: 'inherit'});
-  }
-  else{    
-    var proc = spawn('npm', ['install', (verbose ? '--verbose' : ''), '--save',  'react-native'], {stdio: 'inherit'});
+function run(root, projectName, local_react_native_dir, verbose) {
+  var proc;
+  if (/^win/.test(process.platform)) {
+    proc = spawn('cmd', ['/c', 'npm', 'install', (verbose ? '--verbose' : ''), '--save',  (local_react_native_dir ? local_react_native_dir : 'react-native')], {stdio: 'inherit'});
+  } else {
+    proc = spawn('npm', ['install', (verbose ? '--verbose' : ''), '--save',  (local_react_native_dir ? local_react_native_dir : 'react-native')], {stdio: 'inherit'}); 
   }
   proc.on('close', function (code) {
     if (code !== 0) {
