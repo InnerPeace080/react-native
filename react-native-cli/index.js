@@ -184,7 +184,12 @@ function createProject(name, verbose) {
 }
 
 function run(root, projectName, verbose) {
-  var proc = spawn('npm', ['install', (verbose ? '--verbose' : ''), '--save',  'react-native'], {stdio: 'inherit'});
+  var proc;
+  if (/^win/.test(process.platform)) {
+    proc = spawn('cmd', ['/c', 'npm', 'install', (verbose ? '--verbose' : ''), '--save',  'react-native'], {stdio: 'inherit'});
+  } else {
+    proc = spawn('npm', ['install', (verbose ? '--verbose' : ''), '--save',  'react-native'], {stdio: 'inherit'}); 
+  }
   proc.on('close', function (code) {
     if (code !== 0) {
       console.error('`npm install --save react-native` failed');
