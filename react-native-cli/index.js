@@ -82,7 +82,7 @@ if (cli) {
   cli.run();
 } else {
   if (argv._.length != 2 || argv._[0] != 'init') {
-    argv.showHelp();
+    optimist.showHelp();
     process.exit(1);
   }
 
