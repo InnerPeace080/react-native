@@ -49,7 +49,7 @@ var usage = 'Initilize a react-native project.\n' +
 
 var argv = optimist
                   .usage(usage)
-                  .alias('l', 'local-react-native').describe('l', 'Path to local react-native project.')
+                  .alias('l', 'local-react-native').describe('l', 'Path to local react-native project; or use this flag without value to use lastest path used')
                   .argv;
 
 var CLI_MODULE_PATH = function() {
@@ -78,6 +78,7 @@ if (fs.existsSync(cliPath)) {
   cli = require(cliPath);
 }
 
+
 if (cli) {
   cli.run();
 } else {
@@ -87,7 +88,54 @@ if (cli) {
   }
 
   var project_name = argv._[1];
-  var local_react_native_dir = path.resolve(argv.l);
+
+  var local_react_native_dir
+  // check if no define react-native lib
+  if(argv.l === undefined){
+    // default , no specify path of react-native lib
+  }
+  else if(argv.l === true){
+    // have l flag bot no path
+    console.log("\nREACT-NATIVE-LIB folder is not specified so value of variable REACT_NATIVE_LIB will be used ");
+
+    if(process.env.REACT_NATIVE_LIB === undefined){
+  	   console.log(chalk.red( "\nEnviroment system variabel REACT_NATIVE_LIB is not exited, please add or restart this cmd shell to update enviroment variable, or use --remote for remote lib from npm "));
+       console.log('Project initialization canceled');
+       process.exit();
+    }
+    else{
+      local_react_native_dir = process.env.REACT_NATIVE_LIB;
+    }
+  }
+  else{
+    // specify path of react native lib
+    local_react_native_dir = path.resolve(argv.l);
+
+    if (!fs.existsSync(local_react_native_dir)) {
+      console.error(chalk.red( local_react_native_dir + " is not exist"));
+      console.log('Project initialization canceled');
+      process.exit();
+    }
+
+    console.log("this react-native-lib path will be saved for later use ");
+    var proc;
+    if (/^win/.test(process.platform)) {
+      console.log("save to variable enviroment");
+      proc = spawn('setx', ['/m', 'REACT_NATIVE_LIB',local_react_native_dir], {stdio: 'ignore'});
+    }
+    else{
+      console.log(chalk.yellow("saving just support for window 7 only"));
+    }
+
+    proc.on('close', function (code) {
+      if (code !== 0) {
+        console.error(chalk.yellow('Can not save enviroment variable ( only avaiable on win 7 )'));
+        return;
+      }
+    })
+
+  }
+
   var verbose = argv.verbose;
 
   init(project_name, local_react_native_dir, verbose);
@@ -182,7 +230,7 @@ function run(root, projectName, local_react_native_dir, verbose) {
   if (/^win/.test(process.platform)) {
     proc = spawn('cmd', ['/c', 'npm', 'install', (verbose ? '--verbose' : ''), '--save',  (local_react_native_dir ? local_react_native_dir : 'react-native')], {stdio: 'inherit'});
   } else {
-    proc = spawn('npm', ['install', (verbose ? '--verbose' : ''), '--save',  (local_react_native_dir ? local_react_native_dir : 'react-native')], {stdio: 'inherit'}); 
+    proc = spawn('npm', ['install', (verbose ? '--verbose' : ''), '--save',  (local_react_native_dir ? local_react_native_dir : 'react-native')], {stdio: 'inherit'});
   }
   proc.on('close', function (code) {
     if (code !== 0) {
