@@ -42,6 +42,15 @@ var spawn = require('child_process').spawn;
 var chalk = require('chalk');
 var prompt = require('prompt');
 var semver = require('semver');
+var optimist = require('optimist');
+
+var usage = 'Initilize a react-native project.\n' +
+            'Usage: react-native init <project-name> [--verbose] [-l <react-native-dir>]';
+
+var argv = optimist
+                  .usage(usage)
+                  .alias('l', 'local-react-native').describe('l', 'Path to local react-native project; or use this flag without value to use lastest path used')
+                  .argv;
 
 var CLI_MODULE_PATH = function() {
   return path.resolve(
@@ -69,43 +78,67 @@ if (fs.existsSync(cliPath)) {
   cli = require(cliPath);
 }
 
+
 if (cli) {
   cli.run();
 } else {
-  var args = process.argv.slice(2);
-  if (args.length === 0) {
-    console.error(
-      'You did not pass any commands, did you mean to run `react-native init`?'
-    );
+  if (argv._.length != 2 || argv._[0] != 'init') {
+    optimist.showHelp();
     process.exit(1);
   }
 
-  switch (args[0]) {
-  case 'init':
-    if (args[1]) {
-      var logLevel = '';
-      if (process.argv.indexOf('--verbose') >= 0) {
-        logLevel = 'verbose';
-      } else if (process.argv.indexOf('--debug') >= 0) {
-        logLevel = 'debug';
-      }
-      init(args[1], logLevel);
-    } else {
-      console.error(
-        'Usage: react-native init <ProjectName> [--debug|--verbose]'
-      );
-      process.exit(1);
-    }
-    break;
-  default:
-    console.error(
-      'Command `%s` unrecognized. ' +
-      'Did you mean to run this inside a react-native project?',
-      args[0]
-    );
-    process.exit(1);
-    break;
+  var project_name = argv._[1];
+
+  var local_react_native_dir
+  // check if no define react-native lib
+  if(argv.l === undefined){
+    // default , no specify path of react-native lib
   }
+  else if(argv.l === true){
+    // have l flag bot no path
+    console.log("\nREACT-NATIVE-LIB folder is not specified so value of variable REACT_NATIVE_LIB will be used ");
+
+    if(process.env.REACT_NATIVE_LIB === undefined){
+  	   console.log(chalk.red( "\nEnviroment system variabel REACT_NATIVE_LIB is not exited, please add or restart this cmd shell to update enviroment variable, or use --remote for remote lib from npm "));
+       console.log('Project initialization canceled');
+       process.exit();
+    }
+    else{
+      local_react_native_dir = process.env.REACT_NATIVE_LIB;
+    }
+  }
+  else{
+    // specify path of react native lib
+    local_react_native_dir = path.resolve(argv.l);
+
+    if (!fs.existsSync(local_react_native_dir)) {
+      console.error(chalk.red( local_react_native_dir + " is not exist"));
+      console.log('Project initialization canceled');
+      process.exit();
+    }
+
+    console.log("this react-native-lib path will be saved for later use ");
+    var proc;
+    if (/^win/.test(process.platform)) {
+      console.log("save to variable enviroment");
+      proc = spawn('setx', ['/m', 'REACT_NATIVE_LIB',local_react_native_dir], {stdio: 'ignore'});
+    }
+    else{
+      console.log(chalk.yellow("saving just support for window 7 only"));
+    }
+
+    proc.on('close', function (code) {
+      if (code !== 0) {
+        console.error(chalk.yellow('Can not save enviroment variable ( only avaiable on win 7 )'));
+        return;
+      }
+    })
+
+  }
+
+  var verbose = argv.verbose;
+
+  init(project_name, local_react_native_dir, verbose);
 }
 
 function validatePackageName(name) {
@@ -183,22 +216,22 @@ function createProject(name, logLevel) {
   fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify(packageJson));
   process.chdir(root);
 
-  console.log('Installing react-native package from npm...');
+  if (local_react_native_dir) {
+    console.log('Installing react-native package from "' + local_react_native_dir + '" ...');
+  } else {
+    console.log('Installing react-native package from npm...');
+  }
 
-  run(root, projectName, logLevel);
+  run(root, projectName, local_react_native_dir, verbose);
 }
 
-function run(root, projectName, logLevel) {
-  var args = ['install', '--save'];
-  if (logLevel === 'verbose') {
-    args.push('--verbose');
+function run(root, projectName, local_react_native_dir, verbose) {
+  var proc;
+  if (/^win/.test(process.platform)) {
+    proc = spawn('cmd', ['/c', 'npm', 'install', (verbose ? '--verbose' : ''), '--save',  (local_react_native_dir ? local_react_native_dir : 'react-native')], {stdio: 'inherit'});
+  } else {
+    proc = spawn('npm', ['install', (verbose ? '--verbose' : ''), '--save',  (local_react_native_dir ? local_react_native_dir : 'react-native')], {stdio: 'inherit'});
   }
-  args.push('react-native');
-  var spawnArgs = {};
-  if (logLevel === 'debug' || logLevel === 'verbose') {
-    spawnArgs = {stdio: 'inherit'};
-  }
-  var proc = spawn('npm', args, spawnArgs);
   proc.on('close', function (code) {
     if (code !== 0) {
       console.error('`npm install --save react-native` failed');
