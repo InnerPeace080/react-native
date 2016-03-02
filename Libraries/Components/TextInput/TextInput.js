@@ -558,6 +558,13 @@ var TextInput = React.createClass({
     var eventCount = event.nativeEvent.eventCount;
     this.props.onChange && this.props.onChange(event);
     this.props.onChangeText && this.props.onChangeText(text);
+    
+    if (!this.refs.input) {
+     // calling `this.props.onChange` or `this.props.onChangeText`
+     // may clean up the input itself. Exits here.
+     return;
+    }
+
     this.setState({mostRecentEventCount: eventCount}, () => {
       // NOTE: this doesn't seem to be needed on iOS - keeping for now in case it's required on Android
       if (Platform.OS === 'android') {
