@@ -98,16 +98,6 @@ var ViewPagerAndroid = React.createClass({
 
 
     /**
-     * Function called when the page scrolling state has changed.
-     * The page scrolling state can be in 3 states:
-     * - idle, meaning there is no interaction with the page scroller happening at the time
-     * - dragging, meaning there is currently an interaction with the page scroller
-     * - settling, meaning that there was an interaction with the page scroller, and the
-     *   page scroller is now finishing it's closing or opening animation
-     */
-    onPageScrollStateChanged: ReactPropTypes.func,
-
-    /**
      * This callback will be called once ViewPager finish navigating to selected page
      * (when user swipes between pages). The `event.nativeEvent` object passed to this
      * callback will have following fields:
@@ -176,12 +166,6 @@ var ViewPagerAndroid = React.createClass({
     }
   },
   
-  _onPageScrollStateChanged: function(e: Event) {
-    if (this.props.onPageScrollStateChanged) {
-      this.props.onPageScrollStateChanged(e.nativeEvent.pageScrollState);
-    }
-  },
-
   _onPageScrollStateChanged: function(e: Event) {
     if (this.props.onPageScrollStateChanged) {
       this.props.onPageScrollStateChanged(e.nativeEvent.pageScrollState);

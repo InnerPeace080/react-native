@@ -42,14 +42,18 @@ var spawn = require('child_process').spawn;
 var chalk = require('chalk');
 var prompt = require('prompt');
 var semver = require('semver');
- * Used arguments:
+var optimist = require('optimist');
+
 var usage = 'Initilize a react-native project.\n' +
- *   if you are in a RN app folder
- *      package to install, examples:
- *     - "0.22.0-rc1" - A new app will be created using a specific version of React Native from npm repo
- *     - "https://registry.npmjs.org/react-native/-/react-native-0.20.0.tgz" - a .tgz archive from any npm repo
- *     - "/Users/home/react-native/react-native-0.22.0.tgz" - for package prepared with `npm pack`, useful for e2e tests
-var argv = require('minimist')(process.argv.slice(2));
+            'Usage: react-native init <project-name> [--verbose] [-l <react-native-dir>]';
+            
+var argv = optimist
+                  .usage(usage)
+                  .alias('l', 'local-react-native').describe('l', 'Path to local react-native project; or use this flag without value to use lastest path used')
+                  .argv;
+            
+// var argv = require('minimist')(process.argv.slice(2));            
+ 
 
 var CLI_MODULE_PATH = function() {
   return path.resolve(
@@ -82,27 +86,26 @@ var commands = argv._;
 if (cli) {
   cli.run();
 } else {
-  if (args.length === 0) {
+  if (argv._.length != 2 || argv._[0] != 'init') {
     optimist.showHelp();
     process.exit(1);
   }
 
-  switch (args[0]) {
+  var project_name = argv._[1];
 
   var local_react_native_dir
   // check if no define react-native lib
   if(argv.l === undefined){
     // default , no specify path of react-native lib
   }
-    if (args[1]) {
+  else if(argv.l === true){
     // have l flag bot no path
     console.log("\nREACT-NATIVE-LIB folder is not specified so value of variable REACT_NATIVE_LIB will be used ");
 
     if(process.env.REACT_NATIVE_LIB === undefined){
   	   console.log(chalk.red( "\nEnviroment system variabel REACT_NATIVE_LIB is not exited, please add or restart this cmd shell to update enviroment variable, or use --remote for remote lib from npm "));
        console.log('Project initialization canceled');
-      init(args[1], verbose);
-    }
+       process.exit();
     } else {
       local_react_native_dir = process.env.REACT_NATIVE_LIB;
     }
@@ -128,7 +131,6 @@ if (cli) {
     else{
       console.log(chalk.yellow("saving just support for window 7 only"));
     }
-      args[0]
     proc.on('close', function (code) {
       if (code !== 0) {
         console.error(chalk.yellow('Can not save enviroment variable ( only avaiable on win 7 )'));
