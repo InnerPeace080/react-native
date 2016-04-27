@@ -1,4 +1,11 @@
 /**
+ * Copyright (c) 2013-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
  * The examples provided by Facebook are for non-commercial testing and
  * evaluation purposes only.
  *
@@ -18,6 +25,7 @@
 var React = require('react-native');
 var {
   Image,
+  Platform,
   StyleSheet,
   Text,
   View,
@@ -68,8 +76,6 @@ var NetworkImageCallbackExample = React.createClass({
 });
 
 var NetworkImageExample = React.createClass({
-  watchID: (null: ?number),
-
   getInitialState: function() {
     return {
       error: false,
@@ -97,6 +103,38 @@ var NetworkImageExample = React.createClass({
   }
 });
 
+var ImageSizeExample = React.createClass({
+  getInitialState: function() {
+    return {
+      width: 0,
+      height: 0,
+    };
+  },
+  componentDidMount: function() {
+    Image.getSize(this.props.source.uri, (width, height) => {
+      this.setState({width, height});
+    });
+  },
+  render: function() {
+    return (
+      <View style={{flexDirection: 'row'}}>
+        <Image
+          style={{
+            width: 60,
+            height: 60,
+            backgroundColor: 'transparent',
+            marginRight: 10,
+          }}
+          source={this.props.source} />
+        <Text>
+          Actual dimensions:{'\n'}
+          Width: {this.state.width}, Height: {this.state.height}
+        </Text>
+      </View>
+    );
+  },
+});
+
 exports.displayName = (undefined: ?string);
 exports.framework = 'React';
 exports.title = '<Image>';
@@ -118,15 +156,15 @@ exports.examples = [
   },
   {
     title: 'Plain Static Image',
-    description: 'Static assets should be required by prefixing with `image!` ' +
-      'and are located in the app bundle.',
+    description: 'Static assets should be placed in the source code tree, and ' +
+    'required in the same way as JavaScript modules.',
     render: function() {
       return (
         <View style={styles.horizontal}>
-          <Image source={require('image!uie_thumb_normal')} style={styles.icon} />
-          <Image source={require('image!uie_thumb_selected')} style={styles.icon} />
-          <Image source={require('image!uie_comment_normal')} style={styles.icon} />
-          <Image source={require('image!uie_comment_highlighted')} style={styles.icon} />
+          <Image source={require('./uie_thumb_normal.png')} style={styles.icon} />
+          <Image source={require('./uie_thumb_selected.png')} style={styles.icon} />
+          <Image source={require('./uie_comment_normal.png')} style={styles.icon} />
+          <Image source={require('./uie_comment_highlighted.png')} style={styles.icon} />
         </View>
       );
     },
@@ -153,6 +191,20 @@ exports.examples = [
     render: function() {
       return (
         <NetworkImageExample source={{uri: 'http://facebook.github.io/origami/public/images/blog-hero.jpg?r=1'}}/>
+      );
+    },
+    platform: 'ios',
+  },
+  {
+    title: 'defaultSource',
+    description: 'Show a placeholder image when a network image is loading',
+    render: function() {
+      return (
+        <Image
+          defaultSource={require('./bunny.png')}
+          source={{uri: 'http://facebook.github.io/origami/public/images/birds.jpg'}}
+          style={styles.base}
+        />
       );
     },
     platform: 'ios',
@@ -290,19 +342,19 @@ exports.examples = [
         <View>
           <View style={styles.horizontal}>
             <Image
-              source={require('image!uie_thumb_normal')}
+              source={require('./uie_thumb_normal.png')}
               style={[styles.icon, {borderRadius: 5, tintColor: '#5ac8fa' }]}
             />
             <Image
-              source={require('image!uie_thumb_normal')}
+              source={require('./uie_thumb_normal.png')}
               style={[styles.icon, styles.leftMargin, {borderRadius: 5, tintColor: '#4cd964' }]}
             />
             <Image
-              source={require('image!uie_thumb_normal')}
+              source={require('./uie_thumb_normal.png')}
               style={[styles.icon, styles.leftMargin, {borderRadius: 5, tintColor: '#ff2d55' }]}
             />
             <Image
-              source={require('image!uie_thumb_normal')}
+              source={require('./uie_thumb_normal.png')}
               style={[styles.icon, styles.leftMargin, {borderRadius: 5, tintColor: '#8e8e93' }]}
             />
           </View>
@@ -337,37 +389,59 @@ exports.examples = [
       'rendered within the frame.',
     render: function() {
       return (
-        <View style={styles.horizontal}>
-          <View>
-            <Text style={[styles.resizeModeText]}>
-              Contain
-            </Text>
-            <Image
-              style={styles.resizeMode}
-              resizeMode={Image.resizeMode.contain}
-              source={fullImage}
-            />
-          </View>
-          <View style={styles.leftMargin}>
-            <Text style={[styles.resizeModeText]}>
-              Cover
-            </Text>
-            <Image
-              style={styles.resizeMode}
-              resizeMode={Image.resizeMode.cover}
-              source={fullImage}
-            />
-          </View>
-          <View style={styles.leftMargin}>
-            <Text style={[styles.resizeModeText]}>
-              Stretch
-            </Text>
-            <Image
-              style={styles.resizeMode}
-              resizeMode={Image.resizeMode.stretch}
-              source={fullImage}
-            />
-          </View>
+        <View>
+          {[smallImage, fullImage].map((image, index) => {
+            return (
+            <View key={index}>
+              <View style={styles.horizontal}>
+                <View>
+                  <Text style={[styles.resizeModeText]}>
+                    Contain
+                  </Text>
+                  <Image
+                    style={styles.resizeMode}
+                    resizeMode={Image.resizeMode.contain}
+                    source={image}
+                  />
+                </View>
+                <View style={styles.leftMargin}>
+                  <Text style={[styles.resizeModeText]}>
+                    Cover
+                  </Text>
+                  <Image
+                    style={styles.resizeMode}
+                    resizeMode={Image.resizeMode.cover}
+                    source={image}
+                  />
+                </View>
+              </View>
+              <View style={styles.horizontal}>
+                <View>
+                  <Text style={[styles.resizeModeText]}>
+                    Stretch
+                  </Text>
+                  <Image
+                    style={styles.resizeMode}
+                    resizeMode={Image.resizeMode.stretch}
+                    source={image}
+                  />
+                </View>
+                { Platform.OS === 'android' ?
+                  <View style={styles.leftMargin}>
+                    <Text style={[styles.resizeModeText]}>
+                      Center
+                    </Text>
+                    <Image
+                      style={styles.resizeMode}
+                      resizeMode={Image.resizeMode.center}
+                      source={image}
+                    />
+                  </View>
+                : null }
+              </View>
+            </View>
+          );
+        })}
         </View>
       );
     },
@@ -405,6 +479,13 @@ exports.examples = [
       'resizable rounded buttons, shadows, and other resizable assets.',
     render: function() {
       return <ImageCapInsetsExample />;
+    },
+    platform: 'ios',
+  },
+  {
+    title: 'Image Size',
+    render: function() {
+      return <ImageSizeExample source={fullImage} />;
     },
     platform: 'ios',
   },

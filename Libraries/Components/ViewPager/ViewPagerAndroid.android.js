@@ -30,7 +30,7 @@ export type ViewPagerScrollState = $Enum<{
 /**
  * Container that allows to flip left and right between child views. Each
  * child view of the `ViewPagerAndroid` will be treated as a separate page
- * and will be streched to fill the `ViewPagerAndroid`.
+ * and will be stretched to fill the `ViewPagerAndroid`.
  *
  * It is important all children are `<View>`s and not composite components.
  * You can set style properties like `padding` or `backgroundColor` for each
@@ -98,7 +98,17 @@ var ViewPagerAndroid = React.createClass({
 
 
     /**
-     * This callback will be caleld once ViewPager finish navigating to selected page
+     * Function called when the page scrolling state has changed.
+     * The page scrolling state can be in 3 states:
+     * - idle, meaning there is no interaction with the page scroller happening at the time
+     * - dragging, meaning there is currently an interaction with the page scroller
+     * - settling, meaning that there was an interaction with the page scroller, and the
+     *   page scroller is now finishing it's closing or opening animation
+     */
+    onPageScrollStateChanged: ReactPropTypes.func,
+
+    /**
+     * This callback will be called once ViewPager finish navigating to selected page
      * (when user swipes between pages). The `event.nativeEvent` object passed to this
      * callback will have following fields:
      *  - position - index of page that has been selected
@@ -131,6 +141,9 @@ var ViewPagerAndroid = React.createClass({
     // will handle positioning of elements, so it's not important to offset
     // them correctly.
     return React.Children.map(this.props.children, function(child) {
+      if (!child) {
+        return null;
+      }
       var newProps = {
         ...child.props,
         style: [child.props.style, {
@@ -163,6 +176,12 @@ var ViewPagerAndroid = React.createClass({
     }
   },
   
+  _onPageScrollStateChanged: function(e: Event) {
+    if (this.props.onPageScrollStateChanged) {
+      this.props.onPageScrollStateChanged(e.nativeEvent.pageScrollState);
+    }
+  },
+
   _onPageScrollStateChanged: function(e: Event) {
     if (this.props.onPageScrollStateChanged) {
       this.props.onPageScrollStateChanged(e.nativeEvent.pageScrollState);

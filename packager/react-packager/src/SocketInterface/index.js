@@ -11,7 +11,6 @@
 const Promise = require('promise');
 const SocketClient = require('./SocketClient');
 const SocketServer = require('./SocketServer');
-const _ = require('underscore');
 const crypto = require('crypto');
 const debug = require('debug')('ReactNativePackager:SocketInterface');
 const fs = require('fs');
@@ -30,7 +29,9 @@ const SocketInterface = {
         const value = options[key];
         if (value) {
           hash.update(
-            typeof value === 'string' ? value : JSON.stringify(value)
+            options[key] != null && typeof value === 'string'
+              ? value
+              : JSON.stringify(value)
           );
         }
       });
@@ -47,7 +48,7 @@ const SocketInterface = {
         sockPath = '\\\\.\\pipe\\' + sockPath
       }
 
-      if (fs.existsSync(sockPath)) {
+      if (existsSync(sockPath)) {
         var sock = net.connect(sockPath);
         sock.on('connect', () => {
           SocketClient.create(sockPath).then(
@@ -97,7 +98,7 @@ function createServer(resolve, reject, options, sockPath) {
   const log = fs.openSync(logPath, 'a');
 
   // Enable server debugging by default since it's going to a log file.
-  const env = _.clone(process.env);
+  const env = Object.assign({}, process.env);
   env.DEBUG = 'ReactNativePackager:SocketServer';
 
   // We have to go through the main entry point to make sure
@@ -131,6 +132,15 @@ function createServer(resolve, reject, options, sockPath) {
     type: 'createSocketServer',
     data: { sockPath, options }
   });
+}
+
+function existsSync(filename) {
+  try {
+    fs.accessSync(filename);
+    return true;
+  } catch(ex) {
+    return false;
+  }
 }
 
 module.exports = SocketInterface;

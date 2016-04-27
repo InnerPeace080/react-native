@@ -42,15 +42,14 @@ var spawn = require('child_process').spawn;
 var chalk = require('chalk');
 var prompt = require('prompt');
 var semver = require('semver');
-var optimist = require('optimist');
-
+ * Used arguments:
 var usage = 'Initilize a react-native project.\n' +
-            'Usage: react-native init <project-name> [--verbose] [-l <react-native-dir>]';
-
-var argv = optimist
-                  .usage(usage)
-                  .alias('l', 'local-react-native').describe('l', 'Path to local react-native project; or use this flag without value to use lastest path used')
-                  .argv;
+ *   if you are in a RN app folder
+ *      package to install, examples:
+ *     - "0.22.0-rc1" - A new app will be created using a specific version of React Native from npm repo
+ *     - "https://registry.npmjs.org/react-native/-/react-native-0.20.0.tgz" - a .tgz archive from any npm repo
+ *     - "/Users/home/react-native/react-native-0.22.0.tgz" - for package prepared with `npm pack`, useful for e2e tests
+var argv = require('minimist')(process.argv.slice(2));
 
 var CLI_MODULE_PATH = function() {
   return path.resolve(
@@ -78,32 +77,33 @@ if (fs.existsSync(cliPath)) {
   cli = require(cliPath);
 }
 
-
+// minimist api
+var commands = argv._;
 if (cli) {
   cli.run();
 } else {
-  if (argv._.length != 2 || argv._[0] != 'init') {
+  if (args.length === 0) {
     optimist.showHelp();
     process.exit(1);
   }
 
-  var project_name = argv._[1];
+  switch (args[0]) {
 
   var local_react_native_dir
   // check if no define react-native lib
   if(argv.l === undefined){
     // default , no specify path of react-native lib
   }
-  else if(argv.l === true){
+    if (args[1]) {
     // have l flag bot no path
     console.log("\nREACT-NATIVE-LIB folder is not specified so value of variable REACT_NATIVE_LIB will be used ");
 
     if(process.env.REACT_NATIVE_LIB === undefined){
   	   console.log(chalk.red( "\nEnviroment system variabel REACT_NATIVE_LIB is not exited, please add or restart this cmd shell to update enviroment variable, or use --remote for remote lib from npm "));
        console.log('Project initialization canceled');
-       process.exit();
+      init(args[1], verbose);
     }
-    else{
+    } else {
       local_react_native_dir = process.env.REACT_NATIVE_LIB;
     }
   }
@@ -115,6 +115,8 @@ if (cli) {
       console.error(chalk.red( local_react_native_dir + " is not exist"));
       console.log('Project initialization canceled');
       process.exit();
+    } else {
+      init(commands[1], argv.verbose, argv.version);
     }
 
     console.log("this react-native-lib path will be saved for later use ");
@@ -126,7 +128,7 @@ if (cli) {
     else{
       console.log(chalk.yellow("saving just support for window 7 only"));
     }
-
+      args[0]
     proc.on('close', function (code) {
       if (code !== 0) {
         console.error(chalk.yellow('Can not save enviroment variable ( only avaiable on win 7 )'));
@@ -161,22 +163,22 @@ function validatePackageName(name) {
   }
 }
 
-function init(name, local_react_native_dir, verbose) {
+function init(name, local_react_native_dir, verbose,rnPackage) {
   validatePackageName(name);
 
   if (fs.existsSync(name)) {
-    createAfterConfirmation(name, local_react_native_dir, verbose);
+    createAfterConfirmation(name, local_react_native_dir, verbose,rnPackage);
   } else {
-    createProject(name, local_react_native_dir, verbose);
+    createProject(name, local_react_native_dir, verbose,rnPackage);
   }
 }
 
-function createAfterConfirmation(name, local_react_native_dir, verbose) {
+function createAfterConfirmation(name, local_react_native_dir, verbose,rnPackage) {
   prompt.start();
 
   var property = {
     name: 'yesno',
-    message: 'Directory ' + name + ' already exist. Continue?',
+    message: 'Directory ' + name + ' already exists. Continue?',
     validator: /y[es]*|n[o]?/,
     warning: 'Must respond yes or no',
     default: 'no'
@@ -184,7 +186,7 @@ function createAfterConfirmation(name, local_react_native_dir, verbose) {
 
   prompt.get(property, function (err, result) {
     if (result.yesno[0] === 'y') {
-      createProject(name, local_react_native_dir, verbose);
+      createProject(name, local_react_native_dir, verbose,rnPackage);
     } else {
       console.log('Project initialization canceled');
       process.exit();
@@ -192,7 +194,7 @@ function createAfterConfirmation(name, local_react_native_dir, verbose) {
   });
 }
 
-function createProject(name, local_react_native_dir, verbose) {
+function createProject(name, local_react_native_dir, verbose,rnPackage) {
   var root = path.resolve(name);
   var projectName = path.basename(root);
 
@@ -210,7 +212,7 @@ function createProject(name, local_react_native_dir, verbose) {
     version: '0.0.1',
     private: true,
     scripts: {
-      start: 'react-native start'
+      start: 'node node_modules/react-native/local-cli/cli.js start'
     }
   };
   fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify(packageJson));
@@ -222,15 +224,28 @@ function createProject(name, local_react_native_dir, verbose) {
     console.log('Installing react-native package from npm...');
   }
 
-  run(root, projectName, local_react_native_dir, verbose);
+  run(root, projectName, local_react_native_dir,rnPackage, verbose);
+  
 }
 
-function run(root, projectName, local_react_native_dir, verbose) {
+function getInstallPackage(rnPackage) {
+  var packageToInstall = 'react-native';
+  var valideSemver = semver.valid(rnPackage);
+  if (valideSemver) {
+    packageToInstall += '@' + valideSemver;
+  } else if (rnPackage) {
+    // for tar.gz or alternative paths
+    packageToInstall = rnPackage;
+  }
+  return packageToInstall;
+}
+
+function run(root, projectName, local_react_native_dir,rnPackage, verbose) {
   var proc;
   if (/^win/.test(process.platform)) {
-    proc = spawn('cmd', ['/c', 'npm', 'install', (verbose ? '--verbose' : ''), '--save',  (local_react_native_dir ? local_react_native_dir : 'react-native')], {stdio: 'inherit'});
+    proc = spawn('cmd', ['/c', 'npm', 'install', (verbose ? '--verbose' : ''), '--save',  (local_react_native_dir ? local_react_native_dir : getInstallPackage(rnPackage))], {stdio: 'inherit'});
   } else {
-    proc = spawn('npm', ['install', (verbose ? '--verbose' : ''), '--save',  (local_react_native_dir ? local_react_native_dir : 'react-native')], {stdio: 'inherit'});
+    proc = spawn('npm', ['install', (verbose ? '--verbose' : ''), '--save',  (local_react_native_dir ? local_react_native_dir : getInstallPackage(rnPackage))], {stdio: 'inherit'});
   }
   proc.on('close', function (code) {
     if (code !== 0) {
@@ -262,9 +277,13 @@ function checkNodeVersion() {
 }
 
 function checkForVersionArgument() {
-  if (process.argv.indexOf('-v') >= 0 || process.argv.indexOf('--version') >= 0) {
-    var pjson = require('./package.json');
-    console.log(pjson.version);
+  if (argv._.length === 0 && (argv.v || argv.version)) {
+    console.log('react-native-cli: ' + require('./package.json').version);
+    try {
+      console.log('react-native: ' + require(REACT_NATIVE_PACKAGE_JSON_PATH()).version);
+    } catch (e) {
+      console.log('react-native: n/a - not inside a React Native project directory')
+    }
     process.exit();
   }
 }

@@ -22,6 +22,12 @@ var requireNativeComponent = require('requireNativeComponent');
 
 type Event = Object;
 
+/**
+ * **Note:** SliderIOS is deprecated and will be removed in the future. Use the cross-platform
+ * Slider as a drop-in replacement with the same API.
+ *
+ * An iOS-specific component used to select a single value from a range of values.
+ */
 var SliderIOS = React.createClass({
   mixins: [NativeMethodsMixin],
 
@@ -39,7 +45,7 @@ var SliderIOS = React.createClass({
      * Default value is 0.
      *
      * *This is not a controlled component*, e.g. if you don't update
-     * the value, the component won't be reset to its inital value.
+     * the value, the component won't be reset to its initial value.
      */
     value: PropTypes.number,
 
@@ -78,10 +84,23 @@ var SliderIOS = React.createClass({
      */
     disabled: PropTypes.bool,
 
-   /**
-     * Sets an image for the track. It only supports images that are included as assets
+    /**
+     * Assigns a single image for the track. Only static images are supported.
+     * The center pixel of the image will be stretched to fill the track.
      */
     trackImage: Image.propTypes.source,
+
+    /**
+     * Assigns a minimum track image. Only static images are supported. The
+     * rightmost pixel of the image will be stretched to fill the track.
+     */
+    minimumTrackImage: Image.propTypes.source,
+
+    /**
+     * Assigns a maximum track image. Only static images are supported. The
+     * leftmost pixel of the image will be stretched to fill the track.
+     */
+    maximumTrackImage: Image.propTypes.source,
 
     /**
      * Sets an image for the thumb. It only supports static images.
@@ -107,28 +126,27 @@ var SliderIOS = React.createClass({
   },
 
   render: function() {
+    console.warn(
+      'SliderIOS is deprecated and will be removed in ' +
+      'future versions of React Native. Use the cross-platform Slider ' +
+      'as a drop-in replacement.');
+    
+    let {style, onValueChange, onSlidingComplete, ...props} = this.props;
+    props.style = [styles.slider, style];
 
-    let onValueChange = this.props.onValueChange && ((event: Event) => {
-      this.props.onValueChange &&
-        this.props.onValueChange(event.nativeEvent.value);
+    props.onValueChange = onValueChange && ((event: Event) => {
+      onValueChange && onValueChange(event.nativeEvent.value);
     });
 
-    let onSlidingComplete = this.props.onSlidingComplete && ((event: Event) => {
-      this.props.onSlidingComplete &&
-        this.props.onSlidingComplete(event.nativeEvent.value);
+    props.onSlidingComplete = onSlidingComplete && ((event: Event) => {
+      onSlidingComplete && onSlidingComplete(event.nativeEvent.value);
     });
 
-    let {style, ...props} = this.props;
-    style = [styles.slider, style];
-
-    return (
-      <RCTSlider
-        {...props}
-        style={style}
-        onValueChange={onValueChange}
-        onSlidingComplete={onSlidingComplete}
-      />
-    );
+    return <RCTSlider
+      {...props}
+      onStartShouldSetResponder={() => true}
+      onResponderTerminationRequest={() => false}
+    />;
   }
 });
 

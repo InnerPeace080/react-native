@@ -134,4 +134,4 @@ var styles = StyleSheet.create({
 module.exports = {
   AlertExample,
   SimpleAlertExampleBlock,
-}
+};

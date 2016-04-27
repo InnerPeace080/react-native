@@ -26,7 +26,6 @@ public class RootViewUtil {
         return (RootView) current;
       }
       ViewParent next = current.getParent();
-      // Assertions.assertNotNull(next);
       if (next == null) {
         return null;
       }
