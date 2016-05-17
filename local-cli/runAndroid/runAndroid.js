@@ -30,7 +30,11 @@ function _runAndroid(argv, config, resolve, reject) {
     command: 'install-debug',
     type: 'string',
     required: false,
-  }], argv);
+  }, {
+    command: 'flavor',
+    type: 'string',
+    required: false,
+   }], argv);
 
   if (!checkAndroid()) {
     console.log(chalk.red('Android project not found. Maybe run react-native android first?'));
@@ -64,7 +68,16 @@ function buildAndRun(args, reject) {
       ? 'gradlew.bat'
       : './gradlew';
 
-    const gradleArgs = ['installDebug'];
+    const gradleArgs = [];
+    if (args['flavor']) {
+        gradleArgs.push('install' +
+          args['flavor'][0].toUpperCase() + args['flavor'].slice(1) +
+          'Debug'
+        );
+    } else {
+        gradleArgs.push('installDebug');
+    }
+
     if (args['install-debug']) {
       gradleArgs.push(args['install-debug']);
     }
@@ -73,7 +86,8 @@ function buildAndRun(args, reject) {
       'Building and installing the app on the device (cd android && ' + cmd +
       ' ' + gradleArgs.join(' ') + ')...'
     ));
-
+    
+    console.log(gradleArgs);
     child_process.execFileSync(cmd, gradleArgs, {
       stdio: [process.stdin, process.stdout, process.stderr],
     });
