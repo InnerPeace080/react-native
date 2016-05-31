@@ -78,7 +78,8 @@ function buildAndRun(args, reject) {
     const gradleArgs = [];
     if (args['flavor']) {
         gradleArgs.push('install' +
-          args['flavor'][0].toUpperCase() + args['flavor'].slice(1)
+          args['flavor'][0].toUpperCase() + args['flavor'].slice(1) +
+          'Debug'
         );
     } else {
         gradleArgs.push('installDebug');
@@ -89,9 +90,11 @@ function buildAndRun(args, reject) {
     }
 
     console.log(chalk.bold(
-      `Building and installing the app on the device (cd android && ${cmd} ${gradleArgs.join(' ')}...`
+      'Building and installing the app on the device (cd android && ' + cmd +
+      ' ' + gradleArgs.join(' ') + ')...'
     ));
-
+    
+    console.log(gradleArgs);
     child_process.execFileSync(cmd, gradleArgs, {
       stdio: [process.stdin, process.stdout, process.stderr],
     });
