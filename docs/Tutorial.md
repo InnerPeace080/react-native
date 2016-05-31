@@ -69,8 +69,10 @@ We're going to render the title, year, and thumbnail for the movie. Since thumbn
 
 ```javascript
 import React, {
-  AppRegistry,
   Component,
+} from 'react';
+import {
+  AppRegistry,
   Image,
   StyleSheet,
   Text,
@@ -222,7 +224,7 @@ Add some initial state to our application so that we can check `this.state.movie
 
 ```javascript
   constructor(props) {
-    super(props); 
+    super(props);
     this.state = {
       movies: null,
     };
@@ -307,8 +309,10 @@ First things first: add the `ListView` import to the top of the file.
 
 ```javascript
 import React, {
-  AppRegistry,
   Component,
+} from 'react';
+import {
+  AppRegistry,
   Image,
   ListView,
   StyleSheet,
@@ -394,8 +398,10 @@ There's still some work to be done to make it a fully functional app such as: ad
  */
 
 import React, {
-  AppRegistry,
   Component,
+} from 'react';
+import {
+  AppRegistry,
   Image,
   ListView,
   StyleSheet,
@@ -403,11 +409,7 @@ import React, {
   View,
 } from 'react-native';
 
-var API_KEY = '7waqfqbprs7pajbz28mqf6vz';
-var API_URL = 'http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json';
-var PAGE_SIZE = 25;
-var PARAMS = '?apikey=' + API_KEY + '&page_limit=' + PAGE_SIZE;
-var REQUEST_URL = API_URL + PARAMS;
+var REQUEST_URL = 'https://raw.githubusercontent.com/facebook/react-native/master/docs/MoviesExample.json';
 
 class AwesomeProject extends Component {
   constructor(props) {

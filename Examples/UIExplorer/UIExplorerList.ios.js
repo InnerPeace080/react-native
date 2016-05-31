@@ -70,6 +70,10 @@ var ComponentExamples: Array<UIExplorerExample> = [
     module: require('./NavigatorIOSExample'),
   },
   {
+    key: 'PickerExample',
+    module: require('./PickerExample'),
+  },
+  {
     key: 'PickerIOSExample',
     module: require('./PickerIOSExample'),
   },
@@ -145,6 +149,10 @@ var APIExamples: Array<UIExplorerExample> = [
     module: require('./AdSupportIOSExample'),
   },
   {
+    key: 'AlertExample',
+    module: require('./AlertExample').AlertExample,
+  },
+  {
     key: 'AlertIOSExample',
     module: require('./AlertIOSExample'),
   },
@@ -191,6 +199,10 @@ var APIExamples: Array<UIExplorerExample> = [
   {
     key: 'ImageEditingExample',
     module: require('./ImageEditingExample'),
+  },
+  {
+    key: 'LayoutAnimationExample',
+    module: require('./LayoutAnimationExample'),
   },
   {
     key: 'LayoutExample',
@@ -247,6 +259,10 @@ var APIExamples: Array<UIExplorerExample> = [
   {
     key: 'VibrationExample',
     module: require('./VibrationExample'),
+  },
+  {
+    key: 'WebSocketExample',
+    module: require('./WebSocketExample'),
   },
   {
     key: 'XHRExample',
