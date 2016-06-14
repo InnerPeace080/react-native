@@ -101,7 +101,7 @@ import com.facebook.react.common.futures.SimpleSettableFuture;
       case MAIN_UI:
         return createForMainThread(spec.getName(), exceptionHandler);
       case NEW_BACKGROUND:
-        return startNewBackgroundThread(spec.getName(), exceptionHandler);
+        return startNewBackgroundThread(spec.getName(),spec.getStackSize(), exceptionHandler);
       default:
         throw new RuntimeException("Unknown thread type: " + spec.getThreadType());
     }
@@ -117,6 +117,15 @@ import com.facebook.react.common.futures.SimpleSettableFuture;
     return new MessageQueueThreadImpl(name, mainLooper, exceptionHandler);
   }
 
+  public static MessageQueueThreadImpl startNewBackgroundThread(
+                final String name,
+                QueueThreadExceptionHandler exceptionHandler) {
+        return startNewBackgroundThread(
+                    name,
+                    MessageQueueThreadSpec.DEFAULT_STACK_SIZE_BYTES,
+                    exceptionHandler);
+  }
+
   /**
    * Creates  and starts a new MessageQueueThreadImpl encapsulating a new Thread with a new Looper
    * running on it. Give it a name for easier debugging. When this method exits, the new
@@ -124,9 +133,10 @@ import com.facebook.react.common.futures.SimpleSettableFuture;
    */
   private static MessageQueueThreadImpl startNewBackgroundThread(
       String name,
+      long stackSize,
       QueueThreadExceptionHandler exceptionHandler) {
     final SimpleSettableFuture<Looper> simpleSettableFuture = new SimpleSettableFuture<>();
-    Thread bgThread = new Thread(
+    Thread bgThread = new Thread(null,
         new Runnable() {
           @Override
           public void run() {
@@ -136,7 +146,7 @@ import com.facebook.react.common.futures.SimpleSettableFuture;
 
             Looper.loop();
           }
-        }, "mqt_" + name);
+        }, "mqt_" + name, stackSize);
     bgThread.start();
 
     return new MessageQueueThreadImpl(name, simpleSettableFuture.get(5000), exceptionHandler);
