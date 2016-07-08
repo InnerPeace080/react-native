@@ -225,14 +225,17 @@ public class DevSupportManagerImpl implements DevSupportManager {
                 errorCookie != mRedBoxDialog.getErrorCookie()) {
               return;
             }
-            StackFrame[] stack = StackTraceHelper.convertJsStackTrace(details);
-            mRedBoxDialog.setExceptionDetails(message, stack);
-            mRedBoxDialog.setErrorCookie(errorCookie);
-            // JS errors are reported here after source mapping.
-            if (mRedBoxHandler != null) {
-              mRedBoxHandler.handleRedbox(message, stack, RedBoxHandler.ErrorType.JS);
+            try {
+              StackFrame[] stack = StackTraceHelper.convertJsStackTrace(details);
+              mRedBoxDialog.setExceptionDetails(message, stack);
+              mRedBoxDialog.setErrorCookie(errorCookie);
+              // JS errors are reported here after source mapping.
+              if (mRedBoxHandler != null) {
+                mRedBoxHandler.handleRedbox(message, stack, RedBoxHandler.ErrorType.JS);
+              }
+              mRedBoxDialog.show();
             }
-            mRedBoxDialog.show();
+            catch(Exception ex){}
           }
         });
   }
