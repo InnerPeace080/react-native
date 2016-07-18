@@ -105,7 +105,7 @@ public abstract class ReactActivity extends Activity
 
     mReactRootView = createRootView();
     mReactRootView.startReactApplication(
-      getReactNativeHost().getReactInstanceManager(),
+      getReactNativeHost().getReactInstanceManager(this),
       getMainComponentName(),
       getLaunchOptions());
     setContentView(mReactRootView);
@@ -117,7 +117,7 @@ public abstract class ReactActivity extends Activity
     super.onPause();
 
     if (getReactNativeHost().hasInstance()) {
-      getReactNativeHost().getReactInstanceManager().onHostPause();
+      getReactNativeHost().getReactInstanceManager(this).onHostPause();
     }
   }
 
@@ -126,7 +126,7 @@ public abstract class ReactActivity extends Activity
     super.onResume();
 
     if (getReactNativeHost().hasInstance()) {
-      getReactNativeHost().getReactInstanceManager().onHostResume(this, this);
+      getReactNativeHost().getReactInstanceManager(this).onHostResume(this, this);
     }
   }
 
@@ -144,7 +144,7 @@ public abstract class ReactActivity extends Activity
   @Override
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
     if (getReactNativeHost().hasInstance()) {
-      getReactNativeHost().getReactInstanceManager()
+      getReactNativeHost().getReactInstanceManager(this)
         .onActivityResult(requestCode, resultCode, data);
     }
   }
@@ -153,11 +153,11 @@ public abstract class ReactActivity extends Activity
   public boolean onKeyUp(int keyCode, KeyEvent event) {
     if (getReactNativeHost().hasInstance() && getUseDeveloperSupport()) {
       if (keyCode == KeyEvent.KEYCODE_MENU) {
-        getReactNativeHost().getReactInstanceManager().showDevOptionsDialog();
+        getReactNativeHost().getReactInstanceManager(this).showDevOptionsDialog();
         return true;
       }
       if (mDoubleTapReloadRecognizer.didDoubleTapR(keyCode, getCurrentFocus())) {
-        getReactNativeHost().getReactInstanceManager().getDevSupportManager().handleReloadJS();
+        getReactNativeHost().getReactInstanceManager(this).getDevSupportManager().handleReloadJS();
       }
     }
     return super.onKeyUp(keyCode, event);
@@ -166,7 +166,7 @@ public abstract class ReactActivity extends Activity
   @Override
   public void onBackPressed() {
     if (getReactNativeHost().hasInstance()) {
-      getReactNativeHost().getReactInstanceManager().onBackPressed();
+      getReactNativeHost().getReactInstanceManager(this).onBackPressed();
     } else {
       super.onBackPressed();
     }
@@ -180,7 +180,7 @@ public abstract class ReactActivity extends Activity
   @Override
   public void onNewIntent(Intent intent) {
     if (getReactNativeHost().hasInstance()) {
-      getReactNativeHost().getReactInstanceManager().onNewIntent(intent);
+      getReactNativeHost().getReactInstanceManager(this).onNewIntent(intent);
     } else {
       super.onNewIntent(intent);
     }
