@@ -9,13 +9,14 @@
 
 package com.facebook.react;
 
-import javax.annotation.Nullable;
-
-import java.util.List;
-
+import android.app.Activity;
 import android.app.Application;
 
 import com.facebook.infer.annotation.Assertions;
+
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 /**
  * Simple class that holds an instance of {@link ReactInstanceManager}. This can be used in your
@@ -33,9 +34,9 @@ public abstract class ReactNativeHost {
   /**
    * Get the current {@link ReactInstanceManager} instance, or create one.
    */
-  public ReactInstanceManager getReactInstanceManager() {
+  public ReactInstanceManager getReactInstanceManager(Activity activity) {
     if (mReactInstanceManager == null) {
-      mReactInstanceManager = createReactInstanceManager();
+      mReactInstanceManager = createReactInstanceManager(activity);
     }
     return mReactInstanceManager;
   }
@@ -59,7 +60,7 @@ public abstract class ReactNativeHost {
     }
   }
 
-  protected ReactInstanceManager createReactInstanceManager() {
+  protected ReactInstanceManager createReactInstanceManager(Activity activity) {
     ReactInstanceManager.Builder builder = ReactInstanceManager.builder()
       .setUseOldBridge(true)
       .setApplication(mApplication)
@@ -67,7 +68,7 @@ public abstract class ReactNativeHost {
       .setUseDeveloperSupport(getUseDeveloperSupport())
       .setInitialLifecycleState(LifecycleState.BEFORE_CREATE);
 
-    for (ReactPackage reactPackage : getPackages()) {
+    for (ReactPackage reactPackage : getPackages(activity)) {
       builder.addPackage(reactPackage);
     }
 
@@ -122,5 +123,5 @@ public abstract class ReactNativeHost {
    * If your app uses additional views or modules besides the default ones,
    * you'll want to include more packages here.
    */
-  protected abstract List<ReactPackage> getPackages();
+  protected abstract List<ReactPackage> getPackages(Activity activity);
 }
