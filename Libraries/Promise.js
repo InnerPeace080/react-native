@@ -17,7 +17,13 @@ if (__DEV__) {
   require('promise/setimmediate/rejection-tracking').enable({
     allRejections: true,
     onUnhandled: (id, error) => {
-      const {message, stack} = error;
+      var message;
+      var stack;
+      if (error) {
+        message = error.message;
+        stack = error.stack;
+      }
+
       const warning =
         `Possible Unhandled Promise Rejection (id: ${id}):\n` +
         (message == null ? '' : `${message}\n`) +
