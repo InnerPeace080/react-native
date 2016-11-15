@@ -13,7 +13,7 @@ const denodeify = require('denodeify');
 const sane = require('sane');
 const execSync = require('child_process').execSync;
 
-const MAX_WAIT_TIME = 120000;
+const MAX_WAIT_TIME = 360000;
 
 const detectWatcherClass = () => {
   try {
@@ -77,18 +77,22 @@ class FileWatcher extends EventEmitter {
   }
 
   _createWatcher(rootConfig) {
-    const watcher = new WatcherClass(rootConfig.dir, {
+    var watcher = new WatcherClass(rootConfig.dir, {
       glob: rootConfig.globs,
-      dot: false,
+      dot: false
     });
 
-    return new Promise((resolve, reject) => {
-      const rejectTimeout = setTimeout(
-        () => reject(new Error(timeoutMessage(WatcherClass))),
-        MAX_WAIT_TIME
-      );
+    return new Promise(function (resolve, reject) {
 
-      watcher.once('ready', () => {
+      const rejectTimeout = setTimeout(function() {
+        reject(new Error([
+          'Watcher took too long to load',
+          'Try running `watchman version` from your terminal',
+          'https://facebook.github.io/watchman/docs/troubleshooting.html',
+        ].join('\n')));
+      }, MAX_WAIT_TIME);
+
+      watcher.once('ready', function () {
         clearTimeout(rejectTimeout);
         resolve(watcher);
       });
