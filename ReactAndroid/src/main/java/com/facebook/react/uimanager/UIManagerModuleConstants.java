@@ -73,6 +73,8 @@ import com.facebook.react.uimanager.events.TouchEventType;
     return MapBuilder.builder()
         .put("topContentSizeChange", MapBuilder.of("registrationName", "onContentSizeChange"))
         .put("topLayout", MapBuilder.of("registrationName", "onLayout"))
+        .put("topFocusChange", MapBuilder.of("registrationName", "onFocusChange"))
+        .put("topKeyPress", MapBuilder.of("registrationName", "onKeyPress"))
         .put("topLoadingError", MapBuilder.of("registrationName", "onLoadingError"))
         .put("topLoadingFinish", MapBuilder.of("registrationName", "onLoadingFinish"))
         .put("topLoadingStart", MapBuilder.of("registrationName", "onLoadingStart"))

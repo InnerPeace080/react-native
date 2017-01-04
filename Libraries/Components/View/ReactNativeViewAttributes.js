@@ -27,6 +27,8 @@ ReactNativeViewAttributes.UIView = {
   renderToHardwareTextureAndroid: true,
   shouldRasterizeIOS: true,
   onLayout: true,
+  onFocusChange: true,
+  onKeyPress: true,
   onAccessibilityTap: true,
   onMagicTap: true,
   collapsable: true,

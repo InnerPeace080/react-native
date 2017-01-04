@@ -381,6 +381,9 @@ const View = React.createClass({
      */
     onLayout: PropTypes.func,
 
+    onFocusChange: PropTypes.func,
+
+    onKeyPress: PropTypes.func,
     /**
      * Controls whether the `View` can be the target of touch events.
      *

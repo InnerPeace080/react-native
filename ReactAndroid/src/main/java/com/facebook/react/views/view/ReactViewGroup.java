@@ -16,25 +16,34 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.provider.CalendarContract;
+import android.util.Log;
 import android.view.animation.Animation;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.facebook.infer.annotation.Assertions;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.annotations.VisibleForTesting;
 import com.facebook.react.touch.ReactHitSlopView;
 import com.facebook.react.touch.ReactInterceptingViewGroup;
 import com.facebook.react.touch.OnInterceptTouchEventListener;
 import com.facebook.react.uimanager.*;
 import com.facebook.react.uimanager.ReactClippingViewGroupHelper;
+import com.facebook.react.uimanager.events.EventDispatcher;
+import com.facebook.react.uimanager.OnFocusChangeEvent;
+import com.facebook.react.uimanager.events.RCTEventEmitter;
 
 /**
  * Backing for a React View. Has support for borders, but since borders aren't common, lazy
  * initializes most of the storage needed for them.
  */
 public class ReactViewGroup extends ViewGroup implements
-    ReactInterceptingViewGroup, com.facebook.react.uimanager.ReactClippingViewGroup, ReactPointerEventsView, ReactHitSlopView {
+    ReactInterceptingViewGroup, com.facebook.react.uimanager.ReactClippingViewGroup, ReactPointerEventsView, ReactHitSlopView,
+    View.OnKeyListener {
 
   private static final int ARRAY_CAPACITY_INCREMENT = 12;
   private static final int DEFAULT_BACKGROUND_COLOR = Color.TRANSPARENT;
@@ -110,6 +119,28 @@ public class ReactViewGroup extends ViewGroup implements
   @Override
   protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
     // No-op since UIManagerModule handles actually laying out children.
+  }
+
+  @Override
+  public void onFocusChanged(boolean gainFocus, int direction, Rect previouslyFocusedRect) {
+    super.onFocusChanged(gainFocus,direction,previouslyFocusedRect);
+    WritableMap event = Arguments.createMap();
+    event.putBoolean("focus", gainFocus);
+    EventDispatcher eventDispatcher =
+          ((ReactContext)mContext).getNativeModule(UIManagerModule.class).getEventDispatcher();
+    eventDispatcher.dispatchEvent(new OnFocusChangeEvent(this.getId() ,gainFocus));
+  }
+
+  @Override
+  public boolean onKey(View v, int keyCode, KeyEvent keyEvent){
+    if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_ENTER){
+      EventDispatcher eventDispatcher =
+              ((ReactContext)mContext).getNativeModule(UIManagerModule.class).getEventDispatcher();
+      eventDispatcher.dispatchEvent(new OnKeyEvent(this.getId() ,keyCode,keyEvent.getAction()));
+      return true;
+    }
+
+    return false;
   }
 
   @Override
