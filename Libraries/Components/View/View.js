@@ -18,6 +18,7 @@ const ReactNativeStyleAttributes = require('ReactNativeStyleAttributes');
 const ReactNativeViewAttributes = require('ReactNativeViewAttributes');
 const StyleSheetPropType = require('StyleSheetPropType');
 const UIManager = require('UIManager');
+var ReactNative = require('ReactNative');
 const ViewStylePropTypes = require('ViewStylePropTypes');
 
 const requireNativeComponent = require('requireNativeComponent');
@@ -384,6 +385,7 @@ const View = React.createClass({
     onFocusChange: PropTypes.func,
 
     onKeyPress: PropTypes.func,
+
     /**
      * Controls whether the `View` can be the target of touch events.
      *
@@ -499,6 +501,23 @@ const View = React.createClass({
      * @platform android
      */
     needsOffscreenAlphaCompositing: PropTypes.bool,
+  },
+
+  requestFocus:function(){
+    console.log('requestFocus');
+    UIManager.dispatchViewManagerCommand(
+      ReactNative.findNodeHandle(this),
+      UIManager.RCTView.Commands.requestFocus,
+      [0]
+    );
+  },
+  clearFocus:function(){
+    console.log('clearFocus');
+    UIManager.dispatchViewManagerCommand(
+      ReactNative.findNodeHandle(this),
+      UIManager.RCTView.Commands.clearFocus,
+      [0]
+    );
   },
 
   render: function() {

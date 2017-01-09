@@ -45,6 +45,8 @@ public class ReactViewManager extends ViewGroupManager<ReactViewGroup> {
   };
   private static final int CMD_HOTSPOT_UPDATE = 1;
   private static final int CMD_SET_PRESSED = 2;
+  private static final int CMD_REQUEST_FOCUS = 3;
+  private static final int CMD_CLEAR_FOCUS = 4;
 
   @ReactProp(name = "accessible")
   public void setAccessible(ReactViewGroup view, boolean accessible) {
@@ -165,7 +167,11 @@ public class ReactViewManager extends ViewGroupManager<ReactViewGroup> {
 
   @Override
   public Map<String, Integer> getCommandsMap() {
-    return MapBuilder.of("hotspotUpdate", CMD_HOTSPOT_UPDATE, "setPressed", CMD_SET_PRESSED);
+    return MapBuilder.of("hotspotUpdate", CMD_HOTSPOT_UPDATE,
+                          "setPressed", CMD_SET_PRESSED,
+                          "requestFocus", CMD_REQUEST_FOCUS,
+                          "clearFocus", CMD_CLEAR_FOCUS
+                          );
   }
 
   @Override
@@ -189,6 +195,22 @@ public class ReactViewManager extends ViewGroupManager<ReactViewGroup> {
               "Illegal number of arguments for 'setPressed' command");
         }
         root.setPressed(args.getBoolean(0));
+        break;
+      }
+      case CMD_REQUEST_FOCUS: {
+        if (args == null || args.size() != 1) {
+          throw new JSApplicationIllegalArgumentException(
+                  "Illegal number of arguments for 'requestFocus' command");
+        }
+        root.requestFocus();
+        break;
+      }
+      case CMD_CLEAR_FOCUS: {
+        if (args == null || args.size() != 1) {
+          throw new JSApplicationIllegalArgumentException(
+                  "Illegal number of arguments for 'clearFocus' command");
+        }
+        root.clearFocus();
         break;
       }
     }

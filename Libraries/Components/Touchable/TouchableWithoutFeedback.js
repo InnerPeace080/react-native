@@ -11,6 +11,9 @@
  */
 'use strict';
 
+const UIManager = require('UIManager');
+var ReactNative = require('ReactNative');
+
 const EdgeInsetsPropType = require('EdgeInsetsPropType');
 const React = require('React');
 const TimerMixin = require('react-timer-mixin');
@@ -145,6 +148,23 @@ const TouchableWithoutFeedback = React.createClass({
 
   touchableGetPressOutDelayMS: function(): number {
     return this.props.delayPressOut || 0;
+  },
+
+  requestFocus:function(){
+    console.log('requestFocus');
+    UIManager.dispatchViewManagerCommand(
+      ReactNative.findNodeHandle(this),
+      UIManager.RCTView.Commands.requestFocus,
+      [0]
+    );
+  },
+  clearFocus:function(){
+    console.log('clearFocus');
+    UIManager.dispatchViewManagerCommand(
+      ReactNative.findNodeHandle(this),
+      UIManager.RCTView.Commands.clearFocus,
+      [0]
+    );
   },
 
   render: function(): React.Element<any> {

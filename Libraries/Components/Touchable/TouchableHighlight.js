@@ -13,6 +13,9 @@
 
 // Note (avik): add @flow when Flow supports spread properties in propTypes
 
+const UIManager = require('UIManager');
+var ReactNative = require('ReactNative');
+
 var ColorPropType = require('ColorPropType');
 var NativeMethodsMixin = require('react/lib/NativeMethodsMixin');
 var React = require('React');
@@ -223,6 +226,23 @@ var TouchableHighlight = React.createClass({
     );
   },
 
+  requestFocus:function(){
+    console.log('requestFocus');
+    UIManager.dispatchViewManagerCommand(
+      ReactNative.findNodeHandle(this),
+      UIManager.RCTView.Commands.requestFocus,
+      [0]
+    );
+  },
+  clearFocus:function(){
+    console.log('clearFocus');
+    UIManager.dispatchViewManagerCommand(
+      ReactNative.findNodeHandle(this),
+      UIManager.RCTView.Commands.clearFocus,
+      [0]
+    );
+  },
+  
   render: function() {
     return (
       <View
