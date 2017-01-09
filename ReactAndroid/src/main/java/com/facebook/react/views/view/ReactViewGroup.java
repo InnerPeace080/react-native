@@ -18,6 +18,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.provider.CalendarContract;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.animation.Animation;
 import android.view.MotionEvent;
 import android.view.View;
@@ -43,7 +44,7 @@ import com.facebook.react.uimanager.events.RCTEventEmitter;
  */
 public class ReactViewGroup extends ViewGroup implements
     ReactInterceptingViewGroup, com.facebook.react.uimanager.ReactClippingViewGroup, ReactPointerEventsView, ReactHitSlopView,
-    View.OnKeyListener {
+        View.OnKeyListener {
 
   private static final int ARRAY_CAPACITY_INCREMENT = 12;
   private static final int DEFAULT_BACKGROUND_COLOR = Color.TRANSPARENT;
@@ -84,6 +85,7 @@ public class ReactViewGroup extends ViewGroup implements
     }
   }
 
+
   // Following properties are here to support the option {@code removeClippedSubviews}. This is a
   // temporary optimization/hack that is mainly applicable to the large list of images. The way
   // it's implemented is that we store an additional array of children in view node. We selectively
@@ -102,9 +104,12 @@ public class ReactViewGroup extends ViewGroup implements
   private @Nullable ReactViewBackgroundDrawable mReactBackgroundDrawable;
   private @Nullable OnInterceptTouchEventListener mOnInterceptTouchEventListener;
   private boolean mNeedsOffscreenAlphaCompositing = false;
+  private Context mContext = null;
 
   public ReactViewGroup(Context context) {
     super(context);
+    mContext = context;
+    setOnKeyListener(this);
   }
 
   @Override
@@ -124,8 +129,6 @@ public class ReactViewGroup extends ViewGroup implements
   @Override
   public void onFocusChanged(boolean gainFocus, int direction, Rect previouslyFocusedRect) {
     super.onFocusChanged(gainFocus,direction,previouslyFocusedRect);
-    WritableMap event = Arguments.createMap();
-    event.putBoolean("focus", gainFocus);
     EventDispatcher eventDispatcher =
           ((ReactContext)mContext).getNativeModule(UIManagerModule.class).getEventDispatcher();
     eventDispatcher.dispatchEvent(new OnFocusChangeEvent(this.getId() ,gainFocus));
@@ -138,10 +141,15 @@ public class ReactViewGroup extends ViewGroup implements
               ((ReactContext)mContext).getNativeModule(UIManagerModule.class).getEventDispatcher();
       eventDispatcher.dispatchEvent(new OnKeyEvent(this.getId() ,keyCode,keyEvent.getAction()));
       return true;
+    }else{
+      EventDispatcher eventDispatcher =
+              ((ReactContext)mContext).getNativeModule(UIManagerModule.class).getEventDispatcher();
+      eventDispatcher.dispatchEvent(new OnKeyEvent(this.getId() ,keyCode,keyEvent.getAction()));
     }
 
     return false;
   }
+
 
   @Override
   public void requestLayout() {
