@@ -9,6 +9,8 @@
 
 package com.facebook.react.modules.network;
 
+import android.util.Log;
+
 import javax.annotation.Nullable;
 
 import java.io.IOException;
@@ -76,7 +78,9 @@ public final class NetworkingModule extends ReactContextBaseJavaModule {
       for (NetworkInterceptorCreator networkInterceptorCreator : networkInterceptorCreators) {
         clientBuilder.addNetworkInterceptor(networkInterceptorCreator.create());
       }
-      client = clientBuilder.build();
+
+      client = clientBuilder
+              .build();
     }
     mClient = client;
     OkHttpClientProvider.replaceOkHttpClient(client);
@@ -170,10 +174,24 @@ public final class NetworkingModule extends ReactContextBaseJavaModule {
     // client and set the timeout explicitly on the clone.  This is cheap as everything else is
     // shared under the hood.
     // See https://github.com/square/okhttp/wiki/Recipes#per-call-configuration for more information
-    if (timeout != mClient.connectTimeoutMillis()) {
-      client = mClient.newBuilder()
-        .readTimeout(timeout, TimeUnit.MILLISECONDS)
-        .build();
+
+    try {
+      if (timeout != mClient.connectTimeoutMillis()) {
+        client = mClient.newBuilder()
+                .readTimeout(timeout, TimeUnit.MILLISECONDS)
+                .sslSocketFactory(KeyPinStoreUtil.getInstance("server").getContext().getSocketFactory())
+                .build();
+      } else {
+        client = mClient.newBuilder()
+                .sslSocketFactory(KeyPinStoreUtil.getInstance("server").getContext().getSocketFactory())
+                .build();
+      }
+    }catch (Exception ex){
+      if (timeout != mClient.connectTimeoutMillis()) {
+        client = mClient.newBuilder()
+                .readTimeout(timeout, TimeUnit.MILLISECONDS)
+                .build();
+      }
     }
 
     final RCTDeviceEventEmitter eventEmitter = getEventEmitter(executorToken);
