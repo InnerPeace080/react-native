@@ -140,6 +140,8 @@ const View = React.createClass({
      */
     accessible: PropTypes.bool,
 
+    focusableInTouchMode: PropTypes.bool,
+
     /**
      * Overrides the text that's read by the screen reader when the user interacts
      * with the element. By default, the label is constructed by traversing all the
@@ -504,7 +506,6 @@ const View = React.createClass({
   },
 
   requestFocus:function(){
-    console.log('requestFocus');
     UIManager.dispatchViewManagerCommand(
       ReactNative.findNodeHandle(this),
       UIManager.RCTView.Commands.requestFocus,
@@ -512,10 +513,24 @@ const View = React.createClass({
     );
   },
   clearFocus:function(){
-    console.log('clearFocus');
     UIManager.dispatchViewManagerCommand(
       ReactNative.findNodeHandle(this),
       UIManager.RCTView.Commands.clearFocus,
+      [0]
+    );
+  },
+
+  hideFocusable:function(){
+    UIManager.dispatchViewManagerCommand(
+      ReactNative.findNodeHandle(this),
+      UIManager.RCTView.Commands.hideFocusable,
+      [0]
+    );
+  },
+  restoreFocusable:function(){
+    UIManager.dispatchViewManagerCommand(
+      ReactNative.findNodeHandle(this),
+      UIManager.RCTView.Commands.restoreFocusable,
       [0]
     );
   },
@@ -549,10 +564,10 @@ if (__DEV__) {
 }
 
 let ViewToExport = RCTView;
-if (__DEV__) {
+// if (__DEV__) {
   ViewToExport = View;
-} else {
-  Object.assign(RCTView, statics);
-}
+// } else {
+//   Object.assign(RCTView, statics);
+// }
 
 module.exports = ViewToExport;

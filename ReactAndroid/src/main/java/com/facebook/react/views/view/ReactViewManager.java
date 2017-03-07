@@ -47,10 +47,17 @@ public class ReactViewManager extends ViewGroupManager<ReactViewGroup> {
   private static final int CMD_SET_PRESSED = 2;
   private static final int CMD_REQUEST_FOCUS = 3;
   private static final int CMD_CLEAR_FOCUS = 4;
+  private static final int CMD_HIDE_FOCUSABLE = 5;
+  private static final int CMD_RESTORE_FOCUSABLE = 6;
 
   @ReactProp(name = "accessible")
   public void setAccessible(ReactViewGroup view, boolean accessible) {
     view.setFocusable(accessible);
+  }
+
+  @ReactProp(name = "focusableInTouchMode")
+  public void setfocusableInTouchMode(ReactViewGroup view, boolean focusableInTouchMode) {
+    view.setFocusableInTouchMode(focusableInTouchMode);
   }
 
   @ReactPropGroup(names = {
@@ -170,7 +177,9 @@ public class ReactViewManager extends ViewGroupManager<ReactViewGroup> {
     return MapBuilder.of("hotspotUpdate", CMD_HOTSPOT_UPDATE,
                           "setPressed", CMD_SET_PRESSED,
                           "requestFocus", CMD_REQUEST_FOCUS,
-                          "clearFocus", CMD_CLEAR_FOCUS
+                          "clearFocus", CMD_CLEAR_FOCUS,
+                          "hideFocusable",CMD_HIDE_FOCUSABLE,
+                          "restoreFocusable",CMD_RESTORE_FOCUSABLE
                           );
   }
 
@@ -211,6 +220,22 @@ public class ReactViewManager extends ViewGroupManager<ReactViewGroup> {
                   "Illegal number of arguments for 'clearFocus' command");
         }
         root.clearFocus();
+        break;
+      }
+      case CMD_HIDE_FOCUSABLE: {
+        if (args == null || args.size() != 1) {
+          throw new JSApplicationIllegalArgumentException(
+                  "Illegal number of arguments for 'clearFocus' command");
+        }
+        root.hideFocusable();
+        break;
+      }
+      case CMD_RESTORE_FOCUSABLE: {
+        if (args == null || args.size() != 1) {
+          throw new JSApplicationIllegalArgumentException(
+                  "Illegal number of arguments for 'clearFocus' command");
+        }
+        root.restoreFocusable();
         break;
       }
     }

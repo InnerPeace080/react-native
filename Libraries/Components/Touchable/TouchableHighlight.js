@@ -227,7 +227,6 @@ var TouchableHighlight = React.createClass({
   },
 
   requestFocus:function(){
-    console.log('requestFocus');
     UIManager.dispatchViewManagerCommand(
       ReactNative.findNodeHandle(this),
       UIManager.RCTView.Commands.requestFocus,
@@ -235,18 +234,18 @@ var TouchableHighlight = React.createClass({
     );
   },
   clearFocus:function(){
-    console.log('clearFocus');
     UIManager.dispatchViewManagerCommand(
       ReactNative.findNodeHandle(this),
       UIManager.RCTView.Commands.clearFocus,
       [0]
     );
   },
-  
+
   render: function() {
     return (
       <View
         accessible={this.props.accessible !== false}
+        focusableInTouchMode={this.props.focusableInTouchMode!==undefined?this.props.focusableInTouchMode:false}
         accessibilityLabel={this.props.accessibilityLabel}
         accessibilityComponentType={this.props.accessibilityComponentType}
         accessibilityTraits={this.props.accessibilityTraits}

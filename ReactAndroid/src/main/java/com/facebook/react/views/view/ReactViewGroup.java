@@ -37,6 +37,8 @@ import com.facebook.react.uimanager.ReactClippingViewGroupHelper;
 import com.facebook.react.uimanager.events.EventDispatcher;
 import com.facebook.react.uimanager.OnFocusChangeEvent;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
+import com.facebook.react.views.scroll.ReactHorizontalScrollView;
+import com.facebook.react.views.scroll.ReactScrollView;
 
 /**
  * Backing for a React View. Has support for borders, but since borders aren't common, lazy
@@ -105,11 +107,106 @@ public class ReactViewGroup extends ViewGroup implements
   private @Nullable OnInterceptTouchEventListener mOnInterceptTouchEventListener;
   private boolean mNeedsOffscreenAlphaCompositing = false;
   private Context mContext = null;
+  private boolean saveFocusable;
+  private boolean isHideFocusable;
 
   public ReactViewGroup(Context context) {
     super(context);
     mContext = context;
     setOnKeyListener(this);
+    this.saveFocusable = this.isFocusable();
+  }
+
+  @Override
+  public void setFocusable(boolean focusable){
+    if (!this.isHideFocusable){
+      super.setFocusable(focusable);
+      this.saveFocusable = this.isFocusable();
+    }else{
+      super.setFocusable(false);
+    }
+
+  }
+
+  public void recursiveHideFocusableView(View view,int deep){
+    if (view instanceof ReactViewGroup && ((ReactViewGroup)view).getRemoveClippedSubviews()){
+      for (int i = 0; i < ((ReactViewGroup)view).getAllChildrenCount(); i++) {
+        View child = ((ReactViewGroup)view).getChildAtWithSubviewClippingEnabled(i);
+        if (child instanceof ReactViewGroup) {
+          ((ReactViewGroup) child).hideFocusable();
+        } else {
+          if (child instanceof ReactScrollView || child instanceof ReactHorizontalScrollView) {
+            child.clearFocus();
+            child.setFocusable(false);
+          }
+          if (deep <1000) this.recursiveHideFocusableView(child,deep +1);
+        }
+      }
+    }else if (view instanceof ViewGroup) {
+      for (int i = 0; i < ((ViewGroup)view).getChildCount(); i++) {
+        View child = ((ViewGroup)view).getChildAt(i);
+        if (child instanceof ReactViewGroup) {
+          ((ReactViewGroup) child).hideFocusable();
+        } else {
+          if (child instanceof ReactScrollView || child instanceof ReactHorizontalScrollView) {
+            child.clearFocus();
+            child.setFocusable(false);
+          }
+          if (deep <1000) this.recursiveHideFocusableView(child,deep +1);
+        }
+      }
+    }
+  }
+
+
+  public void hideFocusable(){
+    if (!this.isHideFocusable) {
+      this.isHideFocusable=true;
+      this.saveFocusable = this.isFocusable();
+      this.clearFocus();
+      super.setFocusable(false);
+      this.recursiveHideFocusableView(this,0);
+    }
+  }
+
+  public void recursiveRestoreFocusableView(View view,int deep){
+    if (view instanceof ReactViewGroup && ((ReactViewGroup)view).getRemoveClippedSubviews()){
+      for (int i = 0; i < ((ReactViewGroup)view).getAllChildrenCount(); i++) {
+        View child = ((ReactViewGroup)view).getChildAtWithSubviewClippingEnabled(i);
+        if (child instanceof ReactViewGroup) {
+          ((ReactViewGroup) child).restoreFocusable();
+        } else {
+          if (child instanceof ReactScrollView || child instanceof ReactHorizontalScrollView) {
+            child.clearFocus();
+            child.setFocusable(true);
+          }
+          if (deep <1000) this.recursiveRestoreFocusableView(child,deep +1);
+        }
+      }
+    }else if (view instanceof ViewGroup) {
+      for (int i = 0; i < ((ViewGroup)view).getChildCount(); i++) {
+        View child = ((ViewGroup)view).getChildAt(i);
+        if (child instanceof ReactViewGroup) {
+          ((ReactViewGroup) child).restoreFocusable();
+        } else {
+          if (child instanceof ReactScrollView || child instanceof ReactHorizontalScrollView) {
+            child.clearFocus();
+            child.setFocusable(true);
+          }
+          if (deep <1000) this.recursiveRestoreFocusableView(child,deep+1);
+        }
+      }
+    }
+  }
+
+
+  public void restoreFocusable(){
+    if (this.isHideFocusable){
+      this.isHideFocusable=false;
+      super.setFocusable(this.saveFocusable);
+      this.clearFocus();
+      this.recursiveRestoreFocusableView(this,0);
+    }
   }
 
   @Override
@@ -129,9 +226,12 @@ public class ReactViewGroup extends ViewGroup implements
   @Override
   public void onFocusChanged(boolean gainFocus, int direction, Rect previouslyFocusedRect) {
     super.onFocusChanged(gainFocus,direction,previouslyFocusedRect);
-    EventDispatcher eventDispatcher =
-          ((ReactContext)mContext).getNativeModule(UIManagerModule.class).getEventDispatcher();
-    eventDispatcher.dispatchEvent(new OnFocusChangeEvent(this.getId() ,gainFocus));
+    if (!this.isHideFocusable){
+      EventDispatcher eventDispatcher =
+              ((ReactContext)mContext).getNativeModule(UIManagerModule.class).getEventDispatcher();
+      eventDispatcher.dispatchEvent(new OnFocusChangeEvent(this.getId() ,gainFocus));
+    }
+
   }
 
   @Override
